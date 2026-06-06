@@ -369,7 +369,7 @@ const articles=[
 ];
 
 const projects=[
-{name:"OPML Monitoring Dashboard",desc:"Real-time monitoring dashboard built with PyQt6. Tracks and visualizes system metrics.",lang:"Python",langColor:"#3572A5",url:"https://github.com/Wamuu1/-OPML-Monitoring-Dashboard---PyQt6"},
+{name:"OPML Monitoring Dashboard",desc:"Real-time monitoring dashboard built with PyQt6. Tracks and visualizes system metrics.",lang:"Python",langColor:"#3572A5",url:null,private:true},
 {name:"phantom-hook",desc:"Inline hooking engine for Windows x64 with detour and VMT hook support.",lang:"C++",langColor:"#f34b7d",url:"https://github.com/Wamuu1/phantom-hook"},
 {name:"net-recon",desc:"Passive network reconnaissance tool. Sniffs and maps network topology in real-time.",lang:"Python",langColor:"#3572A5",url:"https://github.com/Wamuu1/net-recon"},
 {name:"bin-fuzz",desc:"Coverage-guided binary fuzzer with LLVM pass for edge coverage instrumentation.",lang:"C",langColor:"#555555",url:"https://github.com/Wamuu1/bin-fuzz"},
@@ -380,11 +380,13 @@ const projects=[
 // RENDER PROJECTS
 const pGrid=document.getElementById('projectsGrid');
 projects.forEach((p,i)=>{
-const c=document.createElement('a');c.href=p.url;c.target='_blank';
-c.className='glow-card floating-card block bg-bgCard border border-border rounded-xl p-5 reveal';
+const c=document.createElement(p.private?'div':'a');
+if(!p.private){c.href=p.url;c.target='_blank';}
+c.className='glow-card floating-card block bg-bgCard border border-border rounded-xl p-5 reveal'+(p.private?' cursor-default':'');
 c.style.transitionDelay=i*.07+'s';
 c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mouse-x',e.clientX-r.left+'px');c.style.setProperty('--mouse-y',e.clientY-r.top+'px')});
-c.innerHTML=`<div class="flex items-start gap-3 mb-3"><svg class="w-4 h-4 text-textMuted mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg><h3 class="repo-name font-mono text-sm text-neonPink transition-colors hover:text-neonBlue">${p.name}</h3></div><p class="text-sm text-textMuted leading-relaxed pl-7">${p.desc}</p><div class="flex items-center gap-2 pl-7 mt-3"><span class="w-2.5 h-2.5 rounded-full" style="background:${p.langColor}"></span><span class="font-mono text-xs text-textMuted">${p.lang}</span></div>`;
+const privateBadge=p.private?`<span class="inline-flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 rounded border border-textMuted/20 text-textMuted/60 bg-white/[.03] ml-auto"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>private</span>`:'';
+c.innerHTML=`<div class="flex items-start gap-3 mb-3"><svg class="w-4 h-4 text-textMuted mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg><h3 class="repo-name font-mono text-sm text-neonPink">${p.name}</h3>${privateBadge}</div><p class="text-sm text-textMuted leading-relaxed pl-7">${p.desc}</p><div class="flex items-center gap-2 pl-7 mt-3"><span class="w-2.5 h-2.5 rounded-full" style="background:${p.langColor}"></span><span class="font-mono text-xs text-textMuted">${p.lang}</span></div>`;
 pGrid.appendChild(c);
 });
 

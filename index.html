@@ -73,11 +73,11 @@ html{scroll-behavior:smooth}body{background:#07070d;overflow-x:hidden}
 .floating-card{animation:cardDrift 5s ease-in-out infinite}
 .floating-card:nth-child(2n){animation-delay:.8s}
 .floating-card:nth-child(3n){animation-delay:1.6s}
-.custom-cursor-dot,.custom-cursor-ring{position:fixed;left:0;top:0;pointer-events:none;z-index:120;opacity:0;transition:opacity .25s ease}
+.custom-cursor-dot,.custom-cursor-ring{position:fixed;left:0;top:0;pointer-events:none;z-index:120;opacity:0;transition:opacity .25s ease;will-change:transform,opacity}
 .custom-cursor-dot{width:8px;height:8px;border-radius:50%;background:#FF6B9D;box-shadow:0 0 14px rgba(255,107,157,.75)}
 .custom-cursor-ring{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,215,255,.8);box-shadow:0 0 24px rgba(0,215,255,.18);--ring-scale:1}
 .custom-cursor-ring.is-hover{--ring-scale:1.45;border-color:rgba(255,107,157,.9);box-shadow:0 0 30px rgba(255,107,157,.25)}
-.custom-cursor-trail{position:fixed;width:6px;height:6px;border-radius:50%;background:rgba(0,215,255,.7);pointer-events:none;z-index:119;animation:cursorTrail .5s ease-out forwards}
+.custom-cursor-trail{position:fixed;width:6px;height:6px;border-radius:50%;background:rgba(0,215,255,.7);pointer-events:none;z-index:119;animation:cursorTrail .5s ease-out forwards;will-change:transform,opacity}
 @media (pointer:fine){
 body.custom-cursor-enabled,body.custom-cursor-enabled a,body.custom-cursor-enabled button,body.custom-cursor-enabled [role="button"],body.custom-cursor-enabled .glow-card,body.custom-cursor-enabled .tag-btn{cursor:none!important}
 body.custom-cursor-enabled .custom-cursor-dot,body.custom-cursor-enabled .custom-cursor-ring{opacity:1}
@@ -367,18 +367,24 @@ const sObs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.tar
 document.querySelectorAll('.skill-bar').forEach(b=>sObs.observe(b));
 
 // CUSTOM CURSOR + PARALLAX
-const canFancyCursor=matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches;
+const prefersReducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const lowPowerDevice=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.connection&&navigator.connection.saveData);
+const canFancyCursor=matchMedia('(pointer:fine)').matches&&!prefersReducedMotion;
 if(canFancyCursor){
 document.body.classList.add('custom-cursor-enabled');
 const dot=document.getElementById('cursorDot');
 const ring=document.getElementById('cursorRing');
+const enableTrail=!lowPowerDevice;
+const trailGap=lowPowerDevice?70:40;
+const ringEase=lowPowerDevice?.28:.18;
 let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my,lastTrail=0;
 
 addEventListener('mousemove',e=>{
 mx=e.clientX;my=e.clientY;
-dot.style.transform=`translate(${mx-4}px,${my-4}px)`;
+dot.style.transform=`translate3d(${mx-4}px,${my-4}px,0)`;
+if(enableTrail){
 const now=performance.now();
-if(now-lastTrail>26){
+if(now-lastTrail>trailGap){
 const t=document.createElement('span');
 t.className='custom-cursor-trail';
 t.style.left=mx+'px';
@@ -387,12 +393,13 @@ document.body.appendChild(t);
 setTimeout(()=>t.remove(),520);
 lastTrail=now;
 }
+}
 },{passive:true});
 
 const raf=()=>{
-rx+=(mx-rx)*.18;
-ry+=(my-ry)*.18;
-ring.style.transform=`translate(${rx-17}px,${ry-17}px) scale(var(--ring-scale))`;
+rx+=(mx-rx)*ringEase;
+ry+=(my-ry)*ringEase;
+ring.style.transform=`translate3d(${rx-17}px,${ry-17}px,0) scale(var(--ring-scale))`;
 requestAnimationFrame(raf);
 };
 raf();
@@ -404,15 +411,15 @@ el.addEventListener('mouseleave',()=>ring.classList.remove('is-hover'));
 }
 
 const layers=[...document.querySelectorAll('.parallax-layer')];
-if(layers.length&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+if(layers.length&&!prefersReducedMotion&&!lowPowerDevice){
 let px=0,py=0,cx=0,cy=0;
 addEventListener('mousemove',e=>{px=(e.clientX/innerWidth-.5);py=(e.clientY/innerHeight-.5)},{passive:true});
 const tick=()=>{
 cx+=(px-cx)*.08;cy+=(py-cy)*.08;
 layers.forEach(l=>{
 const d=Number(l.dataset.depth||20);
-l.style.setProperty('--px',`${-cx*d}px`);
-l.style.setProperty('--py',`${-cy*d}px`);
+l.style.setProperty('--px',`${-cx*d*.7}px`);
+l.style.setProperty('--py',`${-cy*d*.7}px`);
 });
 requestAnimationFrame(tick);
 };
